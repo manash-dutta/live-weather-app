@@ -1,6 +1,6 @@
 This app makes API calls to https://openweathermap.org/ to fetch Live Weather data.
 
-To test the project you will need to add an api key to the variable apiKey.
+To test the project you will need to add an api key to the variable apiKey in the file WeatherApp.jsx.
 
 # React + Vite
 
