@@ -1,22 +1,26 @@
+import { useEffect, useState } from "react";
 import sunny from "../assets/images/sunny.png";
 import cloudy from "../assets/images/cloudy.png";
 import rainy from "../assets/images/rainy.png";
 import snowy from "../assets/images/snowy.png";
-import { useEffect, useState } from "react";
+import loadingGif from "../assets/images/loading.gif";
 
 const WeatherApp = () => {
   const [data, setData] = useState({});
   const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const apiKey = import.meta.env.VITE_API_KEY;
 
   useEffect(() => {
     const fetchDefaultWeather = async () => {
+      setLoading(true);
       const defaultLocation = "London";
       const url = `https://api.openweathermap.org/data/2.5/weather?q=${defaultLocation}&units=metric&appid=${apiKey}`;
       const response = await fetch(url);
       const defaultData = await response.json();
       setData(defaultData);
+      setLoading(false);
     };
 
     fetchDefaultWeather();
@@ -31,8 +35,13 @@ const WeatherApp = () => {
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${apiKey}`;
     const response = await fetch(url);
     const data = await response.json();
-    setData(data);
-    setLocation("");
+    if (data.cod !== 200) {
+      setData({ notFound: true });
+    } else {
+      setData(data);
+      setLocation("");
+    }
+    setLoading(false);
   };
 
   const handleKeyDown = (e) => {
@@ -76,7 +85,7 @@ const WeatherApp = () => {
     year: "numeric",
   };
   const date = localDate.toLocaleDateString("en-US", options);
-  const time = localDate.toLocaleTimeString()
+  const time = localDate.toLocaleTimeString();
 
   console.log(data);
 
@@ -107,35 +116,41 @@ const WeatherApp = () => {
             <i className="fa-solid fa-magnifying-glass" onClick={search}></i>
           </div>
         </div>
-        <div className="weather">
-          <img src={weatherImage} alt="Sunny Weather" />
-          <div className="weather-type">
-            {data.weather ? data.weather[0].main : null}
-          </div>
-          <div className="temp">
-            {data.main ? `${Math.round(data.main.temp)}°` : null}
-          </div>
-        </div>
-        <div className="weather-date">
-          <p>{data.dt && date}</p>
-          <p>{data.dt && time}</p>
-        </div>
-        <div className="weather-data">
-          <div className="humidity">
-            <div className="data-name">Humidity</div>
-            <i className="fa-solid fa-droplet"></i>
-            <div className="data">
-              {data.main ? `${data.main.humidity}%` : null}
+        {loading ? (<img className="loader" src={loadingGif} alt="loading" />) : data.notFound ? (
+          <div className="not-found">Not Found 😔</div>
+        ) : (
+          <>
+            <div className="weather">
+              <img src={weatherImage} alt="Sunny Weather" />
+              <div className="weather-type">
+                {data.weather ? data.weather[0].main : null}
+              </div>
+              <div className="temp">
+                {data.main ? `${Math.round(data.main.temp)}°` : null}
+              </div>
             </div>
-          </div>
-          <div className="wind">
-            <div className="data-name">Wind</div>
-            <i className="fa-solid fa-wind"></i>
-            <div className="data">
-              {data.wind ? `${data.wind.speed} km/h` : null}
+            <div className="weather-date">
+              <p>{data.dt && date}</p>
+              <p>{data.dt && time}</p>
             </div>
-          </div>
-        </div>
+            <div className="weather-data">
+              <div className="humidity">
+                <div className="data-name">Humidity</div>
+                <i className="fa-solid fa-droplet"></i>
+                <div className="data">
+                  {data.main ? `${data.main.humidity}%` : null}
+                </div>
+              </div>
+              <div className="wind">
+                <div className="data-name">Wind</div>
+                <i className="fa-solid fa-wind"></i>
+                <div className="data">
+                  {data.wind ? `${data.wind.speed} km/h` : null}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
